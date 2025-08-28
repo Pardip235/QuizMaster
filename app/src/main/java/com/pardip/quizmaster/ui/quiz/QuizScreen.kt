@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pardip.quizmaster.R
 import com.pardip.quizmaster.data.remote.dto.KahootChoice
+import com.pardip.quizmaster.data.util.ErrorType
 import com.pardip.quizmaster.ui.quiz.component.QuizCardScaffold
 import com.pardip.quizmaster.ui.quiz.model.QuizUiState
 import com.pardip.quizmaster.ui.quiz.model.RevealReason
@@ -97,7 +98,7 @@ private fun QuizScreen(
 
         Scaffold(
             modifier = Modifier.fillMaxSize(),
-            containerColor = Color.Transparent // Avoid hiding bg with scaffold background
+            containerColor = Color.Transparent
         ) { innerPadding ->
             Box(
                 modifier = modifier
@@ -106,7 +107,8 @@ private fun QuizScreen(
             ) {
                 when {
                     state.loading -> Loading()
-                    state.error != null -> Error(state.error, onRetry)
+                    state.noPlayableQuestions -> NoQuestions(onRetry)
+                    state.error != null -> Error(type = state.error, onRetry = onRetry)
                     state.finished -> Finished()
                     else -> {
                         when (val quizItem = state.items.getOrNull(state.currentIndex)) {
@@ -150,6 +152,8 @@ fun QuizQuestionCard(
     onSelect: (Int) -> Unit,
     onContinue: () -> Unit,
 ) {
+    val supporting = bannerText(state)
+
     QuizCardScaffold(
         reveal = state.reveal,
         index = state.currentIndex,
@@ -179,15 +183,13 @@ fun QuizQuestionCard(
                 }
             }
         },
-        supportingText = state.inlineMessage,
+        supportingText = supporting,
         showProgress = !state.showSolution,
         progress = state.progress,
         remainingSeconds = state.remainingSeconds,
         primaryActionLabel = if (state.showSolution) {
             stringResource(R.string.continueButtonText)
-        } else {
-            null
-        },
+        } else null,
         onPrimaryAction = if (state.showSolution) onContinue else null
     )
 }
@@ -203,20 +205,19 @@ fun OpenEndedCard(
 ) {
     val isWrong = state.showSolution && state.reveal == RevealReason.WRONG
     val isCorrect = state.showSolution && state.reveal == RevealReason.CORRECT
-    val supporting = when {
-        isCorrect -> stringResource(R.string.correctWithCheck)
-        isWrong -> stringResource(
-            id = R.string.wrongWithCross,
-            quizItem.acceptedAnswers.joinToString()
-        )
 
+    // Show error text after submitting input
+    val fieldSupporting = when {
+        isCorrect -> stringResource(R.string.correctWithCheck)
+        isWrong -> stringResource(R.string.wrongWithCross, quizItem.acceptedAnswers.joinToString())
         else -> null
     }
-    val buttonTextId = if (state.showSolution) {
-        R.string.continueButtonText
-    } else {
-        R.string.submitButtonText
-    }
+
+    val banner = bannerText(state)
+
+    val buttonTextId =
+        if (state.showSolution) R.string.continueButtonText else R.string.submitButtonText
+
     QuizCardScaffold(
         reveal = state.reveal,
         index = state.currentIndex,
@@ -246,14 +247,10 @@ fun OpenEndedCard(
                         modifier = Modifier.fillMaxWidth(),
                         isError = isWrong,
                         supportingText = {
-                            if (!supporting.isNullOrBlank()) {
+                            if (!fieldSupporting.isNullOrBlank()) {
                                 Text(
-                                    supporting,
-                                    color = if (isCorrect) {
-                                        CorrectColor
-                                    } else {
-                                        WrongColor
-                                    },
+                                    fieldSupporting,
+                                    color = if (isCorrect) CorrectColor else WrongColor,
                                     fontWeight = FontWeight.SemiBold
                                 )
                             }
@@ -271,7 +268,7 @@ fun OpenEndedCard(
                 }
             }
         },
-        supportingText = state.inlineMessage, // we’re showing feedback in the field
+        supportingText = banner,
         showProgress = !state.showSolution,
         progress = state.progress,
         remainingSeconds = state.remainingSeconds,
@@ -290,13 +287,15 @@ fun SliderCard(
     onSubmit: () -> Unit,
     onContinue: () -> Unit,
 ) {
+    val banner = bannerText(state)
+
     QuizCardScaffold(
         reveal = state.reveal,
         index = state.currentIndex,
         total = state.items.size,
         imageUrl = quizItem.imageUrl,
         questionText = quizItem.text,
-        answersCount = 1, // only one slider block
+        answersCount = 1,
         answersContent = { _: Dp ->
             Column(
                 Modifier.fillMaxSize(),
@@ -313,31 +312,26 @@ fun SliderCard(
                 Slider(
                     value = v.toFloat(),
                     onValueChange = {
-                        val snapped = (((it - quizItem.start) / quizItem.step) * quizItem.step + quizItem.start)
-                            .coerceIn(quizItem.start, quizItem.end).toInt()
+                        val snapped =
+                            (((it - quizItem.start) / quizItem.step) * quizItem.step + quizItem.start)
+                                .coerceIn(quizItem.start, quizItem.end).toInt()
                         onSet(snapped)
                     },
                     valueRange = quizItem.start.toFloat()..quizItem.end.toFloat(),
-                    steps = ((quizItem.end - quizItem.start).toInt() / quizItem.step.toInt()) - 1,
+                    steps = ((quizItem.end - quizItem.start) / quizItem.step).toInt() - 1,
                     enabled = !state.showSolution,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
         },
-        supportingText = state.inlineMessage,
+        supportingText = banner,
         showProgress = !state.showSolution,
         progress = state.progress,
         remainingSeconds = state.remainingSeconds,
         primaryActionLabel = stringResource(
-            when {
-                state.showSolution -> R.string.continueButtonText
-                else -> R.string.submitButtonText
-            }
+            if (state.showSolution) R.string.continueButtonText else R.string.submitButtonText
         ),
-        onPrimaryAction = when {
-            state.showSolution -> onContinue
-            else -> onSubmit
-        }
+        onPrimaryAction = if (state.showSolution) onContinue else onSubmit
     )
 }
 
@@ -353,7 +347,16 @@ private fun Loading() {
 }
 
 @Composable
-private fun Error(message: String, onRetry: () -> Unit) {
+private fun Error(type: ErrorType, onRetry: () -> Unit) {
+    val message = when (type) {
+        is ErrorType.Http -> stringResource(R.string.error_http, type.code)
+        is ErrorType.Offline -> stringResource(R.string.error_offline)
+        is ErrorType.Timeout -> stringResource(R.string.error_timeout)
+        is ErrorType.Network -> stringResource(R.string.error_network)
+        is ErrorType.Parse -> stringResource(R.string.error_parse)
+        is ErrorType.Unexpected -> stringResource(R.string.error_unknown)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -361,10 +364,22 @@ private fun Error(message: String, onRetry: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(
-            text = stringResource(R.string.errorMessage, message),
-            textAlign = TextAlign.Center
-        )
+        Text(message, textAlign = TextAlign.Center)
+        Spacer(Modifier.height(16.dp))
+        Button(onClick = onRetry) { Text(text = stringResource(R.string.retry)) }
+    }
+}
+
+@Composable
+private fun NoQuestions(onRetry: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(stringResource(R.string.error_no_questions), textAlign = TextAlign.Center)
         Spacer(Modifier.height(16.dp))
         Button(onClick = onRetry) { Text(text = stringResource(R.string.retry)) }
     }
@@ -490,6 +505,13 @@ fun AnswerButton(
     }
 }
 
+@Composable
+private fun bannerText(state: QuizUiState): String? = when {
+    state.showTimeUpBanner -> stringResource(R.string.time_up)
+    state.showNoAnswerBanner -> stringResource(R.string.no_answer_submitted)
+    else -> null
+}
+
 @Preview(showBackground = true, name = "Quiz - Multiple Choice")
 @Composable
 fun QuizUiPreview() {
@@ -512,7 +534,6 @@ fun QuizUiPreview() {
             showSolution = true,
             reveal = RevealReason.CORRECT,
             progress = 0.4f,
-            inlineMessage = "Well done!"
         ),
         onAnswerSelected = {},
         onRetry = {},
@@ -544,7 +565,6 @@ fun OpenEndedUiPreview() {
             typedAnswer = "Helios",
             showSolution = true,
             reveal = RevealReason.CORRECT,
-            inlineMessage = null,
             progress = 0.8f
         ),
         onAnswerSelected = {},

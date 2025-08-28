@@ -11,8 +11,17 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import java.util.concurrent.TimeUnit
 
+/** Retrofit base; must end with a trailing slash. */
 private const val BASE_URL = "https://create.kahoot.it/"
 
+/**
+ * Networking singleton that configures Retrofit/OkHttp and exposes [KahootApi].
+ *
+ * - Base URL + OkHttp timeouts
+ * - Default "Accept: application/json" header
+ * - Debug logging via [HttpLoggingInterceptor] (BODY in debug)
+ * - kotlinx.serialization JSON converter (ignores unknown keys, no explicit nulls)
+ */
 object ApiProvider {
     val api: KahootApi by lazy { retrofit.create(KahootApi::class.java) }
 

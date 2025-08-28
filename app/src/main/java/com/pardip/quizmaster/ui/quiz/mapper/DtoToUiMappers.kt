@@ -7,6 +7,16 @@ import com.pardip.quizmaster.ui.quiz.model.UiQuestion
 import com.pardip.quizmaster.ui.quiz.model.UiQuiz
 import com.pardip.quizmaster.ui.quiz.model.UiSlider
 
+/**
+ * Maps a Kahoot DTO to UI models.
+ *
+ * - Skips empty/unsupported questions
+ * - Chooses image (question → media background → cover)
+ * - Clamps time to 5–120s
+ * - Builds per-type payloads (answers/correct, accepted answers, slider range)
+ *
+ * @return ordered list of renderable UI questions
+ */
 fun KahootResponse.toUi(): List<UiQuestion> {
     val coverUrl = cover
     return questions.mapNotNull { q ->
@@ -16,7 +26,7 @@ fun KahootResponse.toUi(): List<UiQuestion> {
         val imageUrl =
             q.image ?: q.media.firstOrNull { it.type == "background_image" }?.id ?: coverUrl
         val time = (q.time ?: 20_000).coerceIn(5_000, 120_000)
-        val alt = q.imageMetadata?.altText
+        val alt = q.imageMetadata?.altText // Can pass altText from media
 
         when (q.type) {
             QuestionType.QUIZ -> {
