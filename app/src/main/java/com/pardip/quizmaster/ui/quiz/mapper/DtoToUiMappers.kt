@@ -28,7 +28,6 @@ fun KahootResponse.toUi(): List<UiQuestion> {
                     text = text,
                     imageUrl = imageUrl,
                     timeMs = time,
-                    layout = q.layout?.name,
                     altText = alt,
                     answers = answers,
                     correctIndices = correct
@@ -43,7 +42,6 @@ fun KahootResponse.toUi(): List<UiQuestion> {
                     text = text,
                     imageUrl = imageUrl,
                     timeMs = time,
-                    layout = q.layout?.name,
                     altText = alt,
                     acceptedAnswers = accepted
                 )
@@ -55,7 +53,6 @@ fun KahootResponse.toUi(): List<UiQuestion> {
                     text = text,
                     imageUrl = imageUrl,
                     timeMs = time,
-                    layout = q.layout?.name,
                     altText = alt,
                     start = ints.start,
                     end = ints.end,

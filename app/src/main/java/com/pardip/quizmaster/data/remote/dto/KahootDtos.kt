@@ -20,7 +20,6 @@ data class KahootQuestion(
     val time: Int? = 20000,
     val points: Boolean? = null,
     val pointsMultiplier: Int? = null,
-    val layout: LayoutType? = null,
     val image: String? = null,
     val imageMetadata: ImageMetadata? = null,
     val choices: List<KahootChoice> = emptyList(),
@@ -34,14 +33,6 @@ enum class QuestionType {
     @SerialName("open_ended") OPEN_ENDED,
     @SerialName("slider") SLIDER,
     @SerialName("true_false") TRUE_FALSE, // if server uses this sometimes
-    UNKNOWN;
-}
-
-
-@Serializable
-enum class LayoutType {
-    @SerialName("TRUE_FALSE") TRUE_FALSE,
-    @SerialName("DEFAULT") DEFAULT,
     UNKNOWN;
 }
 
