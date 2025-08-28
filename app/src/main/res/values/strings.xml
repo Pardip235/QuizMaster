@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">QuizMaster</string>
+    <string name="correct">Correct</string>
+    <string name="wrong">Wrong</string>
+    <string name="correctWithCheck">✅ Correct!</string>
+    <string name="wrongWithCross">❌ Wrong! Correct answers: %1$s</string>
+    <string name="placeholderTextField">Type your answer</string>
+    <string name="continueButtonText">Continue</string>
+    <string name="submitButtonText">Submit</string>
+    <string name="your_answer">Your answer: %1$s</string>
+    <string name="retry">Retry</string>
+    <string name="errorMessage">Opps: %%1$s</string>
+    <string name="done">Well done! 🎉</string>
+    <string name="thankYou">Thanks for playing</string>
 </resources>
