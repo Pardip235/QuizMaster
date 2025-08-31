@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt.android)
 }
 
 android {
@@ -35,6 +37,10 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+    kotlin {
+        jvmToolchain(17)
+    }
+
     buildFeatures {
         compose = true
         buildConfig = true
@@ -59,14 +65,27 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+    // Hilt
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
+
     // Image library
     implementation(libs.coil.compose)
+
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
+
     // Networking + serialization
     implementation(libs.retrofit)
     implementation(libs.okhttp)
     implementation(libs.logging.interceptor)
     implementation(libs.retrofit2.kotlinx.serialization.converter)
     implementation(libs.kotlinx.serialization.json)
+
+    // Test
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(kotlin("test"))
+    testImplementation(libs.mockk)
+    testImplementation(libs.mockwebserver)
 }

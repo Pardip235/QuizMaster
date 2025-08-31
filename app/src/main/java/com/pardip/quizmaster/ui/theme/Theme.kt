@@ -1,6 +1,5 @@
 package com.pardip.quizmaster.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -9,7 +8,18 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+
+val KahootRed    = Color(0xFFE21B3C)
+val KahootGreen  = Color(0xFF26890C)
+val KahootYellow = Color(0xFFD89E00)
+val KahootBlue   = Color(0xFF1368CE) // add one if you need blue
+
+val CorrectColor = Color(0xFF4CAF50)
+val WrongColor   = Color(0xFFF44336)
+val NeutralColor = Color(0xFFFFCDD2)
+val Purple = Color(0xFF9C27B0)
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
@@ -21,16 +31,6 @@ private val LightColorScheme = lightColorScheme(
     primary = Purple40,
     secondary = PurpleGrey40,
     tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
 )
 
 @Composable

@@ -7,6 +7,15 @@
 /.idea/workspace.xml
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
+.idea/
+*.ipr
+*.iws
+
+
+# Gradle/Android usuals
+.gradle/
+build/
+local.properties
 .DS_Store
 /build
 /captures
