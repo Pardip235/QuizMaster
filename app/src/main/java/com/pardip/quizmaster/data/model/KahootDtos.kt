@@ -53,5 +53,6 @@ data class ImageMetadata(
 @Serializable
 data class KahootMedia(
     val type: String? = null,
-    val id: String? = null
+    val id: String? = null,
+    val altText: String ? = null,
 )

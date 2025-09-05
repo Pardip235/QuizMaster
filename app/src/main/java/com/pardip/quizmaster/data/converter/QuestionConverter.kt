@@ -18,12 +18,10 @@ fun KahootResponse.asDomainModel(): List<Question> {
         val text = q.text.trim()
         if (text.isEmpty()) return@mapNotNull null
 
-        val imageUrl = q.image
-            ?: q.media.firstOrNull { it.type == "background_image" }?.id
-            ?: coverUrl
+        val imageUrl = resolveQuestionImageUrl(q, coverUrl)
 
         val duration = q.time.milliseconds
-        val alt = q.imageMetadata?.altText
+        val alt = q.imageMetadata?.altText ?: q.media.firstNotNullOfOrNull { it.altText }
 
         when (q.type) {
             QuestionType.QUIZ -> {
