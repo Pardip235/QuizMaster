@@ -195,7 +195,7 @@ fun Content(
                     quizItem = q,
                     shouldShowSolution = qs.showSolution(),
                     text = typed,
-                    onType = { if (qs.showSolution()) typed = it },
+                    onType = { typed = it },
                     modifier = Modifier.fillMaxSize()
                 )
 
@@ -203,7 +203,7 @@ fun Content(
                     quizItem = q,
                     shouldShowSolution = qs.showSolution(),
                     value = slider,
-                    onSet = { if (qs.showSolution()) slider = it },
+                    onSet = { slider = it },
                     modifier = Modifier.fillMaxSize()
                 )
             }
@@ -359,7 +359,7 @@ fun OpenEndedQuestionCard(
                     ) {
                         OutlinedTextField(
                             value = text,
-                            onValueChange = { if (shouldShowSolution) onType(it) },
+                            onValueChange = onType,
                             textStyle = MaterialTheme.typography.bodySmall,
                             placeholder = {
                                 Text(stringResource(R.string.placeholderTextField), maxLines = 1)
@@ -419,7 +419,6 @@ fun SliderQuestionCard(
                     Slider(
                         value = value.toFloat(),
                         onValueChange = {
-                            if (shouldShowSolution) return@Slider
                             val raw = it.toDouble()
                             val clamped = clamp(raw, quizItem.start, quizItem.end)
                             val snapped = snapToStep(clamped, quizItem.start, quizItem.step)
@@ -509,8 +508,8 @@ fun AnswerButton(
     val isSelected = selectedIndex == index
     val isCorrect = choice.isCorrect
     val backgroundColor = when {
-        showSolution && isCorrect -> CorrectColor
         showSolution && isSelected && !isCorrect -> WrongColor
+        showSolution && isCorrect -> CorrectColor
         showSolution -> NeutralColor
         else -> baseColor
     }
