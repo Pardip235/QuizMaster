@@ -85,7 +85,7 @@ fun QuizScreen() {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     QuizScreen(
         state = state,
-        onAnswerSelected = viewModel::selectAnswer,
+        onAnswerSelected = viewModel::submitMultipleChoice,
         onRetry = { viewModel.load() },
         onContinue = viewModel::continueNext,
         onSubmitOpenEnded = viewModel::submitOpenEnded,

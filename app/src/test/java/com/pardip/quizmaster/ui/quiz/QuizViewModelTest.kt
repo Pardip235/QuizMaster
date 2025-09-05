@@ -58,7 +58,7 @@ class QuizViewModelTest {
         val vm = vmWith(NetworkResult.Success(sampleQuestions()))
         advanceUntilIdle()
 
-        vm.selectAnswer(0) // correct in sample
+        vm.submitMultipleChoice(0) // correct in sample
         val c = vm.uiState.value as QuizScreenState.Content
         assertTrue(c.currentQuestionState is QuizScreenState.Content.QuestionState.Answered.Correct)
     }
@@ -68,7 +68,7 @@ class QuizViewModelTest {
         val vm = vmWith(NetworkResult.Success(sampleQuestions()))
         advanceUntilIdle()
 
-        vm.selectAnswer(1) // wrong
+        vm.submitMultipleChoice(1) // wrong
         val c = vm.uiState.value as QuizScreenState.Content
         val st = c.currentQuestionState as QuizScreenState.Content.QuestionState.Answered.Wrong
         assertEquals(1, st.selectedIndex)
@@ -81,7 +81,7 @@ class QuizViewModelTest {
         advanceUntilIdle()
 
         // Go to OE
-        vm.selectAnswer(0); vm.continueNext()
+        vm.submitMultipleChoice(0); vm.continueNext()
         advanceUntilIdle()
 
         vm.submitOpenEnded("Helios")
@@ -95,7 +95,7 @@ class QuizViewModelTest {
         advanceUntilIdle()
 
         // Go to OE
-        vm.selectAnswer(0); vm.continueNext()
+        vm.submitMultipleChoice(0); vm.continueNext()
         advanceUntilIdle()
 
         vm.submitOpenEnded("Poseidon")
@@ -110,7 +110,7 @@ class QuizViewModelTest {
         advanceUntilIdle()
 
         // MC -> OE -> Slider
-        vm.selectAnswer(0); vm.continueNext()
+        vm.submitMultipleChoice(0); vm.continueNext()
         vm.submitOpenEnded("Helios"); vm.continueNext()
         advanceUntilIdle()
 
@@ -125,7 +125,7 @@ class QuizViewModelTest {
         advanceUntilIdle()
 
         // MC -> OE -> Slider
-        vm.selectAnswer(0); vm.continueNext()
+        vm.submitMultipleChoice(0); vm.continueNext()
         vm.submitOpenEnded("Helios"); vm.continueNext()
         advanceUntilIdle()
 
@@ -167,7 +167,7 @@ class QuizViewModelTest {
         val vm = vmWith(NetworkResult.Success(sampleQuestions()))
         advanceUntilIdle()
 
-        vm.selectAnswer(0) // set to Answered.Correct
+        vm.submitMultipleChoice(0) // set to Answered.Correct
         vm.onTimeUp()      // should be ignored
         val c = vm.uiState.value as QuizScreenState.Content
         assertTrue(c.currentQuestionState is QuizScreenState.Content.QuestionState.Answered.Correct)
@@ -178,7 +178,7 @@ class QuizViewModelTest {
         val vm = vmWith(NetworkResult.Success(sampleQuestions()))
         advanceUntilIdle()
 
-        vm.selectAnswer(0)
+        vm.submitMultipleChoice(0)
         vm.continueNext()
         val c = vm.uiState.value as QuizScreenState.Content
         assertEquals(1, c.currentIndex)
@@ -191,7 +191,7 @@ class QuizViewModelTest {
         val vm = vmWith(NetworkResult.Success(sampleQuestions()))
         advanceUntilIdle()
 
-        vm.selectAnswer(0)
+        vm.submitMultipleChoice(0)
         // VM schedules 2_000ms delay. Advance virtual time:
         advanceTimeBy(2_000)
         advanceUntilIdle()
@@ -208,7 +208,7 @@ class QuizViewModelTest {
         advanceUntilIdle()
 
         // MC -> OE -> Slider, then continue once more
-        vm.selectAnswer(0); vm.continueNext()
+        vm.submitMultipleChoice(0); vm.continueNext()
         vm.submitOpenEnded("Helios"); vm.continueNext()
         vm.submitSlider(1.0); vm.continueNext()
 
@@ -221,9 +221,9 @@ class QuizViewModelTest {
         val vm = vmWith(NetworkResult.Success(sampleQuestions()))
         advanceUntilIdle()
 
-        vm.selectAnswer(0) // now Answered.Correct
+        vm.submitMultipleChoice(0) // now Answered.Correct
         val before = vm.uiState.value as QuizScreenState.Content
-        vm.selectAnswer(1) // should be ignored
+        vm.submitMultipleChoice(1) // should be ignored
         val after = vm.uiState.value as QuizScreenState.Content
         assertEquals(before.currentQuestionState, after.currentQuestionState)
     }

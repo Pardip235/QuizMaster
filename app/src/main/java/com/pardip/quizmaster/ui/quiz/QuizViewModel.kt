@@ -23,7 +23,7 @@ import javax.inject.Inject
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-private  const val AUTO_ADVANCE_DELAY_MS = 2_000L
+private const val AUTO_ADVANCE_DELAY_MS = 2_000L
 
 @HiltViewModel
 class QuizViewModel @Inject constructor(
@@ -84,12 +84,13 @@ class QuizViewModel @Inject constructor(
     }
 
 
-    fun selectAnswer(index: Int) {
+    fun submitMultipleChoice(index: Int) {
         val s = _ui.value as? QuizScreenState.Content ?: return
         val q = s.question as? MultipleChoice ?: return
         if (s.currentQuestionState !is QuizScreenState.Content.QuestionState.Progress) return
 
         val correct = q.choices.getOrNull(index)?.isCorrect == true
+
         val netState = if (correct) {
             QuizScreenState.Content.QuestionState.Answered.Correct(selectedIndex = index)
         } else {
@@ -106,20 +107,18 @@ class QuizViewModel @Inject constructor(
     fun submitOpenEnded(text: String) {
         val s = (_ui.value as? QuizScreenState.Content) ?: return
         val q = (s.question as? OpenEnded) ?: return
-
         val norm = normalizeAnswer(text)
         val ok = q.acceptedAnswers.any { normalizeAnswer(it) == norm }
 
-        _ui.value = s.copy(
-            currentQuestionState = if (ok)
-                QuizScreenState.Content.QuestionState.Answered.Correct(selectedIndex = -1)
-            else
-                QuizScreenState.Content.QuestionState.Answered.Wrong(
-                    selectedIndex = -1,
-                    correctIndex = -1
-                )
-        )
-        scheduleAutoAdvanceIfNeeded() // keep small delay/auto-continue
+        val newState = if (ok) {
+            QuizScreenState.Content.QuestionState.Answered.Correct(selectedIndex = -1)
+        } else {
+            QuizScreenState.Content.QuestionState.Answered.Wrong(
+                selectedIndex = -1, correctIndex = -1
+            )
+        }
+
+        setQuestionState(newState = newState)
     }
 
     fun submitSlider(submitted: Double) {
@@ -129,22 +128,20 @@ class QuizViewModel @Inject constructor(
         // Normalize what came from UI (idempotent if UI already normalized)
         val clamped = clamp(submitted, q.start, q.end)
         val snapped = snapToStep(clamped, q.start, q.step)
-
         val valid = abs(snapped - q.correct) <= q.tolerance
-        _ui.value = contentState.copy(
-            currentQuestionState =
-                if (valid) {
-                    QuizScreenState.Content.QuestionState.Answered.Correct(
-                        selectedIndex = snapped.roundToInt()
-                    )
-                } else {
-                    QuizScreenState.Content.QuestionState.Answered.Wrong(
-                        selectedIndex = snapped.roundToInt(),
-                        correctIndex = q.correct.roundToInt()
-                    )
-                }
-        )
-        scheduleAutoAdvanceIfNeeded()
+
+        val newState = if (valid) {
+            QuizScreenState.Content.QuestionState.Answered.Correct(
+                selectedIndex = snapped.roundToInt()
+            )
+        } else {
+            QuizScreenState.Content.QuestionState.Answered.Wrong(
+                selectedIndex = snapped.roundToInt(),
+                correctIndex = q.correct.roundToInt()
+            )
+        }
+
+        setQuestionState(newState = newState)
     }
 
     fun continueNext() {
