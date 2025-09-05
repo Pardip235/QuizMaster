@@ -32,8 +32,8 @@ class KahootRepositoryImpl @Inject constructor(
  * Maps a thrown exception to a categorized [NetworkResult.Error].
  *
  * Converts HTTP, offline/timeout/network, and parse errors into [ErrorType]s
- * (preserving HTTP status via [ErrorType.Http]). Do not use for
- * CancellationException—let it propagate.
+ * (preserving HTTP status via [ErrorType.Http]).
+ *
  */
 private fun Throwable.asDomainErrorType(): NetworkResult.Error = when (this) {
     is HttpException -> NetworkResult.Error(type = ErrorType.Http(code()))
